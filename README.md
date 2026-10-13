@@ -132,3 +132,69 @@ ServiceNow communicates with Microsoft Graph using Outbound REST Messages execut
 ### Architecture Documentation
 
 Additional technical information is available in the [Solution Architecture Documentation](architecture/README.md).
+
+## ServiceNow Service Catalog Configuration
+
+### Catalog Item Overview
+
+A ServiceNow Service Catalog item named **Microsoft Entra ID Access Request** was configured to provide a standardised interface for submitting Microsoft Entra ID security group access requests.
+
+The catalog item supports two access management operations:
+
+1. **Grant Access:** Request the addition of a selected user to a specified Microsoft Entra ID security group.
+2. **Revoke Access:** Request the removal of a selected user from a specified Microsoft Entra ID security group.
+
+The catalog item is connected to the Microsoft Entra ID Access Request flow in ServiceNow Workflow Studio, enabling submitted requests to enter an automated approval and access management process.
+
+### Catalog Variables
+
+Three mandatory variables were configured to capture the information required for processing access requests.
+
+| Variable | Technical Name | Type | Purpose |
+|---|---|---|---|
+| Target User Email Address | `target_user_email_address` | Single Line Text | Captures the Microsoft Entra ID user principal name (UPN) used to identify the target user. |
+| Access Action | `access_action` | Select Box | Allows the requester to select Grant Access or Revoke Access. |
+| Entra ID Group | `entra_id_group` | Select Box | Allows the requester to select the target Microsoft Entra ID security group. |
+
+### Variable Configuration and Data Mapping
+
+**Target User Email Address**
+
+The requester provides the target user's Microsoft Entra ID email address or user principal name.
+
+The workflow passes this value to the Get Entra ID User custom action, which queries Microsoft Graph API to retrieve the corresponding user object ID.
+
+**Access Action**
+
+The requester selects one of two available actions:
+
+- Grant Access
+- Revoke Access
+
+The selected value determines which conditional branch of the Flow Designer workflow is executed after approval.
+
+**Entra ID Group**
+
+The requester selects the required Microsoft Entra ID security group from the configured choices.
+
+Each choice displays a readable group name, while its underlying value contains the corresponding Microsoft Entra ID group object ID.
+
+This allows the workflow to pass the selected group identifier directly to the Microsoft Graph integration action.
+
+### Mandatory Field Validation
+
+All three catalog variables were configured as mandatory to ensure that the workflow receives the information required to identify the target user, determine the requested operation, and select the appropriate security group.
+
+This reduces the likelihood of incomplete access requests entering automated processing.
+
+### Requested Item Creation
+
+When the catalog item is submitted, ServiceNow creates a Requested Item (RITM) record.
+
+The RITM provides the central record for tracking the access request through approval, Microsoft Graph processing, and closure.
+
+The workflow updates the RITM according to the processing outcome:
+
+- **Successful provisioning or revocation:** Closed Complete.
+- **Rejected or cancelled approval:** Closed Incomplete.
+- **Workflow execution error:** Closed Incomplete, with work notes indicating that investigation is required.
