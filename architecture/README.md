@@ -6,7 +6,7 @@ This folder contains the solution architecture and process flow documentation fo
 
 ## Architecture Overview
 
-The solution integrates ServiceNow with Microsoft Entra ID through the Microsoft Graph API to automate user access provisioning and revocation.
+The solution integrates ServiceNow with Microsoft Entra ID through Microsoft Graph API to automate user access provisioning and revocation.
 
 ### Core Components
 
