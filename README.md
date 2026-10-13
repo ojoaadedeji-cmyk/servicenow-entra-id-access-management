@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project demonstrates the design, development, and testing of an automated Identity and Access Management (IAM) solution integrating **ServiceNow with Microsoft Entra ID through Microsoft Graph API**.
+This project demonstrates the design, development, and testing of an automated Identity and Access Management (IAM) solution that integrates **ServiceNow with Microsoft Entra ID via the Microsoft Graph API**.
 
 The solution enables users to request access to Microsoft Entra ID security groups or revoke existing access through a ServiceNow Service Catalog item. Requests follow an approval workflow before ServiceNow executes the appropriate group membership operation using Microsoft Graph API.
 
@@ -84,3 +84,51 @@ The solution uses ServiceNow custom Flow Designer actions and Outbound REST Mess
 This approach was selected because the required IntegrationHub capabilities were unavailable in the ServiceNow Personal Developer Instance.
 
 The integration demonstrates how native ServiceNow scripting capabilities, REST APIs, and OAuth 2.0 authentication can support external identity management automation.
+
+## Solution Architecture and Integration Workflow
+
+### Architecture Overview
+
+The solution uses ServiceNow as the central platform for managing access requests, approval decisions, workflow execution, and request tracking.
+
+Microsoft Entra ID serves as the identity management platform, while Microsoft Graph API provides the interface for retrieving user information and modifying security group memberships.
+
+ServiceNow communicates with Microsoft Graph using Outbound REST Messages executed through custom Flow Designer actions. Authentication is handled through OAuth 2.0 using the client credentials grant.
+
+### Integration Workflow
+
+1. **Access Request Submission:** A requester submits the Microsoft Entra ID Access Request catalog item, specifying the target user's email address, the requested action (Grant Access or Revoke Access), and the target Entra ID group.
+
+2. **Approval Processing:** ServiceNow initiates the approval process. The workflow proceeds with access changes only when the request is approved.
+
+3. **Catalog Variable Retrieval:** Following approval, Flow Designer retrieves the submitted catalog variables.
+
+4. **User Identification:** The Get Entra ID User custom action queries Microsoft Graph API to identify the target user's Entra ID object ID.
+
+5. **Conditional Access Processing:** Flow Designer evaluates the requested action and executes the corresponding custom action:
+   - **Grant Access:** Adds the target user to the selected Entra ID security group.
+   - **Revoke Access:** Removes the target user from the selected Entra ID security group.
+
+6. **Successful Request Closure:** When the Microsoft Graph operation succeeds, ServiceNow automatically updates the Requested Item (RITM) to Closed Complete and records confirmation in the work notes.
+
+7. **Rejected Request Handling:** If the approval is rejected or cancelled, ServiceNow prevents group membership changes, closes the RITM as Closed Incomplete, and records the rejection outcome.
+
+8. **Integration Error Handling:** If a workflow execution error occurs, the Flow Designer Error Handler updates the affected RITM to Closed Incomplete and records work notes indicating that manual investigation is required.
+
+### Architecture Components
+
+| Component | Responsibility |
+|---|---|
+| ServiceNow Service Catalog | Captures access requests through a standardised catalog item. |
+| ServiceNow Flow Designer | Coordinates approvals, conditions, custom actions, and request updates. |
+| Custom Flow Actions | Executes user lookup, group membership provisioning, and revocation operations. |
+| ServiceNow Outbound REST Messages | Defines the Microsoft Graph API HTTP requests. |
+| OAuth 2.0 Client Credentials | Authenticates the ServiceNow application with Microsoft identity services. |
+| Microsoft Graph API | Processes Microsoft Entra ID user lookup and group membership operations. |
+| Microsoft Entra ID | Stores user identities and manages security group memberships. |
+| ServiceNow Requested Item (RITM) | Maintains request status, processing outcomes, and work notes. |
+| Flow Designer Error Handler | Handles workflow execution failures and records requests requiring investigation. |
+
+### Architecture Documentation
+
+Additional technical information is available in the [Solution Architecture Documentation](architecture/README.md).
