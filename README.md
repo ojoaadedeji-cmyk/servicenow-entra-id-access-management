@@ -532,4 +532,100 @@ The workflow supports access governance and operational traceability through:
 
 These controls help demonstrate how ServiceNow can support structured access management processes while reducing reliance on manual Service Desk administration.
 
+## Error Handling and Exception Management
+
+### Overview
+
+An error-handling mechanism was implemented in ServiceNow Flow Designer to manage workflow execution failures during Microsoft Entra ID access provisioning and revocation.
+
+The objective was to prevent unsuccessful integration operations from being incorrectly recorded as completed access requests.
+
+The solution uses HTTP response validation within custom Flow Designer actions and a flow-level Error Handler to manage execution failures.
+
+### HTTP Response Validation
+
+The custom Microsoft Graph integration actions evaluate HTTP response codes to determine whether an operation was successful.
+
+For group membership provisioning and revocation, Microsoft Graph API is expected to return **HTTP 204 (No Content)** when the operation succeeds.
+
+If the response does not match the expected successful status, the integration script raises an error.
+
+This allows the workflow to distinguish between successful API operations and unsuccessful execution attempts.
+
+### Flow Designer Error Handler
+
+A flow-level Error Handler was configured and enabled in the Microsoft Entra ID Access Request workflow.
+
+When an execution error is caught, the Error Handler uses an Update Record action to modify the affected Requested Item (`sc_req_item`).
+
+The configured updates are:
+
+| Field | Error Handling Value |
+|---|---|
+| Record | Trigger Requested Item (`sc_req_item`) |
+| State | Closed Incomplete |
+| Stage | Closed Incomplete |
+| Work Notes | Records that automated processing failed and manual investigation is required. |
+
+The Error Handler ensures that affected requests are not incorrectly marked Closed Complete when the workflow encounters a processing error.
+
+### Negative Test: RITM0010018
+
+A negative test was performed to validate the workflow's error-handling behaviour.
+
+**Test Scenario**
+
+The request attempted to revoke Sarah Williams's membership in the Finance System Users security group.
+
+Before the test, it was confirmed that Sarah Williams was not a member of the selected group.
+
+The request was approved, allowing the workflow to proceed to the Microsoft Graph revocation action.
+
+**Observed Execution Results**
+
+1. The Ask For Approval action completed successfully.
+2. The workflow retrieved the submitted catalog variables.
+3. The Get Entra ID User custom action completed.
+4. The Grant Access condition evaluated to False.
+5. The Revoke Access condition evaluated to True.
+6. The Remove User from Entra ID Group action encountered an error that was caught by the workflow.
+7. The normal successful closure action was not executed.
+8. The Flow Designer Error Handler executed successfully.
+9. RITM0010018 was automatically updated to Closed Incomplete.
+10. Work notes were recorded to indicate that the request required manual investigation.
+
+### Test Outcome
+
+**Error Handling Test: PASSED**
+
+The workflow demonstrated that it could detect an unsuccessful integration operation, prevent incorrect successful closure, and execute the configured error-handling process.
+
+The underlying Microsoft Graph error was not subsequently resolved or conclusively diagnosed.
+
+Although the target user was already absent from the selected group, the actual HTTP response was not independently verified. Therefore, the precise cause of the integration failure remains unconfirmed.
+
+This distinction is important: the test confirmed successful execution of the error-handling mechanism, not successful execution of the revocation operation.
+
+### Error Handling Limitations
+
+The current implementation records unsuccessful workflow execution and flags the affected RITM for manual investigation.
+
+It does not yet implement dedicated recovery logic for specific Microsoft Graph errors, such as attempting to remove a user who is already absent from a security group.
+
+The implementation also does not provide automatic retry logic or a separate automated recovery workflow.
+
+These capabilities are identified as potential future enhancements.
+
+### Potential Improvements
+
+Future improvements could include:
+
+1. Checking existing group membership before attempting provisioning or revocation.
+2. Handling already-existing or already-absent group memberships as distinct business scenarios.
+3. Capturing and recording appropriate Microsoft Graph HTTP error details for troubleshooting.
+4. Introducing controlled retry mechanisms for transient integration failures.
+5. Implementing additional operational notifications for failed access requests.
+
+These enhancements would improve the resilience, maintainability, and operational supportability of the integration.
+
 
