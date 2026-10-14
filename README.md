@@ -227,7 +227,7 @@ The application credentials are maintained outside the public GitHub repository.
 
 The integration uses **OAuth 2.0 Client Credentials Grant**, which supports application-to-application authentication without requiring an interactive user sign-in.
 
-This authentication approach is appropriate because ServiceNow executes Microsoft Graph API operations automatically after the required access request approvals have been completed.
+This approach is appropriate because ServiceNow automatically executes Microsoft Graph API operations after the required access request approvals are completed.
 
 The authentication process operates as follows:
 
@@ -277,3 +277,93 @@ The authentication relationship is:
 ServiceNow obtains an access token from Microsoft identity services and uses that token to perform authorised Microsoft Graph API operations.
 
 The Microsoft Graph API provides the interface through which the integration retrieves user information and modifies security group memberships.
+
+## Microsoft Graph REST API Integration
+
+### Integration Overview
+
+The project uses Microsoft Graph REST API to connect ServiceNow with Microsoft Entra ID for automated user identification and security group membership management.
+
+The integration was implemented using **ServiceNow Outbound REST Messages**, **custom Flow Designer actions**, and **server-side JavaScript**.
+
+Because the required IntegrationHub capabilities were unavailable in the ServiceNow Personal Developer Instance, the solution uses ServiceNow's native `sn_ws.RESTMessageV2` API to execute authenticated HTTP requests.
+
+### REST Message Configuration
+
+An Outbound REST Message named **Microsoft Graph API** was configured in ServiceNow.
+
+The integration uses the following Microsoft Graph API base endpoint:
+
+`https://graph.microsoft.com/v1.0`
+
+OAuth 2.0 authentication was configured to enable ServiceNow to obtain access tokens using the client credentials grant.
+
+The REST Message configuration supports the user lookup, group membership provisioning, and revocation operations required by the workflow.
+
+### Microsoft Graph API Operations
+
+| Operation | HTTP Method | Microsoft Graph Endpoint | Expected Successful Response |
+|---|---|---|---|
+| Retrieve Entra ID user | GET | `/users/{user-id-or-UPN}` | 200 OK |
+| Add user to group | POST | `/groups/{group-id}/members/$ref` | 204 No Content |
+| Remove user from group | DELETE | `/groups/{group-id}/members/{user-id}/$ref` | 204 No Content |
+
+The user lookup operation resolves the target user's Microsoft Entra ID object ID, which is subsequently used in group membership operations.
+
+### User Lookup Operation
+
+The **Get Entra ID User** custom action retrieves the Microsoft Entra ID user associated with the email address or user principal name submitted through the Service Catalog.
+
+The action sends a GET request to Microsoft Graph API and extracts the corresponding user object ID from the response.
+
+This allows subsequent workflow actions to reference the correct Microsoft Entra ID user.
+
+### Grant Access Operation
+
+The **Add User to Entra ID Group** custom action executes an authenticated POST request to Microsoft Graph API.
+
+The request identifies the target security group and supplies the user object ID in the required JSON request body.
+
+When Microsoft Graph returns HTTP 204, the operation is treated as successful.
+
+The workflow then updates the associated ServiceNow Requested Item to **Closed Complete** and records confirmation in the work notes.
+
+### Revoke Access Operation
+
+The **Remove User from Entra ID Group** custom action executes an authenticated DELETE request to Microsoft Graph API.
+
+The request identifies both the target security group and the user membership to be removed.
+
+When Microsoft Graph returns HTTP 204, the operation is treated as successful.
+
+The workflow then updates the associated Requested Item to **Closed Complete** and records the successful revocation in the work notes.
+
+### HTTP Response Validation
+
+The custom integration scripts evaluate the HTTP status codes returned by Microsoft Graph API.
+
+Successful group membership operations are expected to return HTTP 204.
+
+If an operation returns an unexpected status code, the script raises an error rather than allowing the workflow to record the operation as successful.
+
+The Flow Designer Error Handler can then update the affected Requested Item to **Closed Incomplete** and record investigation notes.
+
+### Integration Testing
+
+The integration was validated using controlled test users and security groups in Microsoft Entra ID.
+
+Testing confirmed successful group membership provisioning and revocation, with corresponding updates to ServiceNow Requested Item records.
+
+An additional negative test confirmed that a failed revocation attempt triggered the configured workflow error handler.
+
+The underlying HTTP response for that negative test was not independently verified, so its precise failure cause remains unconfirmed.
+
+### Integration Security
+
+The integration uses OAuth 2.0 client credentials authentication rather than embedding authentication credentials directly in JavaScript.
+
+REST endpoint parameters identify the required Microsoft Entra ID users and groups.
+
+Client secrets, access tokens, and confidential authentication configuration values are excluded from the public GitHub repository.
+
+
