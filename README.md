@@ -861,4 +861,132 @@ Potential improvements include:
 
 These enhancements would strengthen the security, governance, and operational readiness of the solution.
 
+## Challenges and Lessons Learned
+
+### Overview
+
+Developing the ServiceNow Microsoft Entra ID Access Management solution involved several technical challenges relating to integration capabilities, authentication, REST API configuration, workflow automation, and exception management.
+
+Addressing these challenges strengthened my understanding of ServiceNow administration, Microsoft Graph API integration, and Identity and Access Management (IAM) processes.
+
+### 1. Limited IntegrationHub Availability
+
+**Challenge:**
+
+The ServiceNow Personal Developer Instance did not provide the required IntegrationHub capabilities for implementing the Microsoft Entra ID integration through prebuilt integration spokes.
+
+**Approach:**
+
+I implemented the integration using ServiceNow Outbound REST Messages, custom Flow Designer actions, and server-side JavaScript with `sn_ws.RESTMessageV2`.
+
+**Lesson Learned:**
+
+I developed a better understanding of how ServiceNow can integrate with external platforms through native REST API functionality without relying exclusively on prebuilt integration spokes.
+
+### 2. Understanding OAuth 2.0 Authentication
+
+**Challenge:**
+
+Configuring application-to-application authentication required understanding Microsoft Entra ID application registrations, OAuth 2.0 client credentials, access tokens, and Microsoft Graph API permissions.
+
+**Approach:**
+
+I configured an application registration in Microsoft Entra ID and established OAuth 2.0 authentication in ServiceNow to support Microsoft Graph API requests.
+
+**Lesson Learned:**
+
+I gained practical knowledge of OAuth 2.0 client credentials authentication and how registered applications securely access external APIs without interactive user authentication.
+
+### 3. Microsoft Graph API Integration
+
+**Challenge:**
+
+Implementing automated user identification and security group membership changes required understanding Microsoft Graph endpoints, HTTP methods, request parameters, and response codes.
+
+**Approach:**
+
+I configured REST Message methods for user lookup, group membership provisioning, and access revocation, then developed custom Flow Designer actions to execute these operations.
+
+**Lesson Learned:**
+
+I strengthened my understanding of REST API integration, including GET, POST, and DELETE requests, HTTP response validation, and the use of dynamic REST parameters.
+
+### 4. Workflow Design and Conditional Processing
+
+**Challenge:**
+
+The workflow needed to distinguish between approved and rejected requests while also executing different integration actions for access provisioning and revocation.
+
+**Approach:**
+
+I configured approval processing, catalog variable retrieval, conditional branches, and separate custom actions for Grant Access and Revoke Access.
+
+I also implemented automated RITM updates to reflect the outcome of each request.
+
+**Lesson Learned:**
+
+I developed practical experience designing reusable ServiceNow workflows that combine approval governance, conditional logic, integration actions, and request lifecycle management.
+
+### 5. Handling Integration Errors
+
+**Challenge:**
+
+An unsuccessful Microsoft Graph operation could leave a request in an inaccurate state if the workflow did not handle execution failures appropriately.
+
+**Approach:**
+
+I implemented HTTP response validation within the custom integration actions and configured a flow-level Error Handler.
+
+During negative testing, an attempted revocation encountered an error. The Error Handler executed successfully, prevented normal successful closure, and updated the RITM to Closed Incomplete with investigation notes.
+
+The underlying Microsoft Graph error was not conclusively diagnosed or subsequently resolved.
+
+**Lesson Learned:**
+
+I learned the importance of distinguishing between successful API execution and successful error handling.
+
+I also gained practical experience implementing exception management to maintain accurate request records when automated processing fails.
+
+### 6. Testing and Validation
+
+**Challenge:**
+
+The integration needed to be tested across multiple processing outcomes rather than relying solely on successful access provisioning.
+
+**Approach:**
+
+I conducted functional and negative tests covering successful access provisioning, successful access revocation, approval rejection, and integration error handling.
+
+I verified the corresponding ServiceNow RITM states, work notes, workflow execution results, and Microsoft Entra ID group membership outcomes where applicable.
+
+**Lesson Learned:**
+
+I strengthened my understanding of end-to-end integration testing, negative testing, and the importance of validating both system behaviour and business outcomes.
+
+### Key Skills Developed
+
+Through this project, I developed and strengthened practical skills in:
+
+- ServiceNow Service Catalog configuration and catalog variables.
+- ServiceNow Flow Designer and Workflow Studio.
+- Custom Flow Designer action development.
+- Server-side JavaScript and `sn_ws.RESTMessageV2`.
+- ServiceNow Outbound REST Message configuration.
+- Microsoft Entra ID application registration and identity management.
+- OAuth 2.0 client credentials authentication.
+- Microsoft Graph API integration.
+- REST API methods, request parameters, and HTTP response validation.
+- Approval governance and conditional workflow processing.
+- Automated Requested Item lifecycle management.
+- Integration error handling and exception management.
+- Functional testing, negative testing, and technical documentation.
+
+### Professional Development Outcome
+
+This project provided hands-on experience designing, implementing, and validating an end-to-end ServiceNow integration with Microsoft Entra ID.
+
+It strengthened my understanding of how ServiceNow can support Identity and Access Management processes through automated approvals, REST API integrations, and controlled request processing.
+
+The experience is relevant to ServiceNow Administrator, ITSM Analyst, and junior ServiceNow Developer roles involving workflow configuration, integration support, troubleshooting, and access management automation.
+
 
