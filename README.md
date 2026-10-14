@@ -198,3 +198,82 @@ The workflow updates the RITM according to the processing outcome:
 - **Successful provisioning or revocation:** Closed Complete.
 - **Rejected or cancelled approval:** Closed Incomplete.
 - **Workflow execution error:** Closed Incomplete, with work notes indicating that investigation is required.
+
+## Microsoft Entra ID and OAuth 2.0 Configuration
+
+### Microsoft Entra ID Environment
+
+Microsoft Entra ID was used as the cloud identity management platform for the project.
+
+A Microsoft Entra ID test environment was configured to support user account identification and security group membership management through Microsoft Graph API.
+
+Test users and security groups were used to validate automated access provisioning and revocation without affecting production identities.
+
+### Microsoft Entra ID Application Registration
+
+An application registration was created in Microsoft Entra ID to establish an application identity for the ServiceNow integration.
+
+The registration enables ServiceNow to authenticate with Microsoft identity services and request access tokens for Microsoft Graph API.
+
+The application registration provides the identifiers required for OAuth 2.0 authentication, including:
+
+- Application (Client) ID
+- Directory (Tenant) ID
+- Application credentials
+
+The application credentials are maintained outside the public GitHub repository.
+
+### OAuth 2.0 Authentication
+
+The integration uses **OAuth 2.0 Client Credentials Grant**, which supports application-to-application authentication without requiring an interactive user sign-in.
+
+This authentication approach is appropriate because ServiceNow executes Microsoft Graph API operations automatically after the required access request approvals have been completed.
+
+The authentication process operates as follows:
+
+1. ServiceNow initiates an OAuth 2.0 token request using its configured application credentials.
+2. Microsoft Identity Services validates the application identity and applicable permissions.
+3. Microsoft Identity Services issues an access token.
+4. ServiceNow uses the access token to authenticate outbound Microsoft Graph API requests.
+5. Microsoft Graph evaluates the token's permissions before processing the requested operation.
+
+### Microsoft Graph API Permissions
+
+Microsoft Graph application permissions are used to authorise the integration to perform identity and group membership operations without an interactive user session.
+
+The integration requires appropriate permissions for retrieving user information and managing group memberships.
+
+These permissions must be configured in the Microsoft Entra ID application registration and granted the required administrator consent.
+
+Application permissions should follow the principle of least privilege, granting only the access necessary for the intended integration operations.
+
+### ServiceNow OAuth Configuration
+
+An OAuth 2.0 configuration was established in ServiceNow to support authentication with Microsoft identity services.
+
+The OAuth configuration was associated with the Microsoft Graph REST integration so that outbound API requests could authenticate using the registered application identity.
+
+The integration uses the OAuth 2.0 client credentials flow rather than delegated user authentication.
+
+This enables approved ServiceNow workflows to execute Microsoft Graph operations without requiring individual requesters to sign in to Microsoft Entra ID during workflow execution.
+
+### Security Considerations
+
+The integration incorporates the following security principles:
+
+1. **Application-based authentication:** ServiceNow authenticates using its registered application identity.
+2. **Approval governance:** Microsoft Entra ID group membership changes are initiated only after the access request has been approved.
+3. **Permission management:** Microsoft Graph permissions should be limited to those required for the integration.
+4. **Credential confidentiality:** Client secrets, access tokens, and other authentication credentials are excluded from public documentation.
+5. **Request traceability:** ServiceNow Requested Item records retain approval and processing outcomes.
+6. **Error handling:** Failed workflow operations are recorded for investigation rather than incorrectly marked as successful.
+
+### Authentication Architecture
+
+The authentication relationship is:
+
+**ServiceNow → Microsoft Entra ID Token Endpoint (OAuth 2.0 Authentication) → Access Token → Microsoft Graph API → Microsoft Entra ID Users and Groups**
+
+ServiceNow obtains an access token from Microsoft identity services and uses that token to perform authorised Microsoft Graph API operations.
+
+The Microsoft Graph API provides the interface through which the integration retrieves user information and modifies security group memberships.
