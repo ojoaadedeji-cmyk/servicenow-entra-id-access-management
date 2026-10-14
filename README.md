@@ -444,4 +444,92 @@ The JavaScript implementation and relevant configuration details will be documen
 
 Authentication credentials, client secrets, and access tokens are excluded from the public repository.
 
+## Approval Governance and Access Management Workflow
+
+### Workflow Overview
+
+A ServiceNow flow named **Microsoft Entra ID Access Request** was developed in Workflow Studio to automate the processing of Microsoft Entra ID security group access requests.
+
+The flow is associated with the Microsoft Entra ID Access Request Service Catalog item and uses the Service Catalog trigger to initiate processing when a request is submitted.
+
+The workflow combines approval processing, catalog variable retrieval, custom Microsoft Graph integration actions, conditional logic, and automated Requested Item (RITM) updates.
+
+### Approval Governance
+
+The workflow uses the **Ask For Approval** action to obtain an approval decision before executing any Microsoft Entra ID group membership changes.
+
+The approval process acts as a governance control to ensure that access provisioning and revocation operations are not automatically executed without authorisation.
+
+The workflow evaluates the approval outcome before proceeding to the integration actions.
+
+### Approved Request Processing
+
+When the approval state is **Approved**, the workflow performs the following operations:
+
+1. Retrieves the submitted catalog variables using the Get Catalog Variables action.
+2. Executes the Get Entra ID User custom action to resolve the target user's Microsoft Entra ID object ID.
+3. Evaluates the requested access action using conditional logic.
+4. Executes the Add User to Entra ID Group action when Grant Access is selected.
+5. Executes the Remove User from Entra ID Group action when Revoke Access is selected.
+6. Updates the RITM to Closed Complete after successful execution of the selected Microsoft Graph operation.
+7. Records work notes confirming the completed access provisioning or revocation.
+
+### Conditional Access Processing
+
+The workflow contains separate conditional branches for the two supported access management operations.
+
+**Grant Access Branch**
+
+When the submitted access action is Grant Access, ServiceNow executes the Add User to Entra ID Group custom action.
+
+This sends an authenticated Microsoft Graph POST request to add the target user to the selected security group.
+
+After successful execution, the workflow updates the RITM to Closed Complete and records the provisioning outcome.
+
+**Revoke Access Branch**
+
+When the submitted access action is Revoke Access, ServiceNow executes the Remove User from Entra ID Group custom action.
+
+This sends an authenticated Microsoft Graph DELETE request to remove the target user from the selected security group.
+
+After successful execution, the workflow updates the RITM to Closed Complete and records the revocation outcome.
+
+### Rejected or Cancelled Request Processing
+
+If the approval state is **Rejected** or **Cancelled**, the workflow follows a separate rejection-handling branch.
+
+The workflow does not execute the Microsoft Graph provisioning or revocation actions.
+
+Instead, ServiceNow:
+
+1. Updates the RITM state to Closed Incomplete.
+2. Updates the RITM stage to Closed Incomplete.
+3. Records work notes confirming that the request was rejected and no group membership changes were performed.
+
+This ensures that requests without approval do not result in automated access changes.
+
+### Automated RITM Lifecycle Management
+
+The workflow updates ServiceNow Requested Item records according to the outcome of each request.
+
+| Processing Outcome | RITM State | RITM Stage / Notes |
+|---|---|---|
+| Successful Grant Access | Closed Complete | Work notes confirm successful group membership provisioning. |
+| Successful Revoke Access | Closed Complete | Work notes confirm successful group membership revocation. |
+| Rejected or Cancelled Approval | Closed Incomplete | Stage set to Closed Incomplete; work notes confirm rejection. |
+| Workflow Execution Error | Closed Incomplete | Stage set to Closed Incomplete; work notes indicate that manual investigation is required. |
+
+### Governance and Auditability
+
+The workflow supports access governance and operational traceability through:
+
+- Approval decisions recorded in ServiceNow.
+- Controlled execution of Microsoft Entra ID membership changes.
+- Separation of approved and rejected request processing.
+- Automated Requested Item status updates.
+- Work notes documenting processing outcomes.
+- Exception handling for unsuccessful workflow execution.
+
+These controls help demonstrate how ServiceNow can support structured access management processes while reducing reliance on manual Service Desk administration.
+
 
