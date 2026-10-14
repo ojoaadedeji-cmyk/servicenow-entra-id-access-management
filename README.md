@@ -887,7 +887,7 @@ I developed a better understanding of how ServiceNow can integrate with external
 
 **Challenge:**
 
-Configuring application-to-application authentication required understanding Microsoft Entra ID application registrations, OAuth 2.0 client credentials, access tokens, and Microsoft Graph API permissions.
+Configuring application-to-application authentication required an understanding of Microsoft Entra ID application registrations, OAuth 2.0 client credentials, access tokens, and Microsoft Graph API permissions.
 
 **Approach:**
 
@@ -988,5 +988,92 @@ This project provided hands-on experience designing, implementing, and validatin
 It strengthened my understanding of how ServiceNow can support Identity and Access Management processes through automated approvals, REST API integrations, and controlled request processing.
 
 The experience is relevant to ServiceNow Administrator, ITSM Analyst, and junior ServiceNow Developer roles involving workflow configuration, integration support, troubleshooting, and access management automation.
+
+## Future Enhancements
+
+### Overview
+
+The ServiceNow Microsoft Entra ID Access Management solution successfully demonstrated automated access provisioning, access revocation, approval governance, and workflow error handling through Microsoft Graph API.
+
+Although the core functionality was implemented and tested, several enhancements could improve the solution's security, resilience, scalability, and operational effectiveness in a production environment.
+
+### 1. Group Membership Validation
+
+Introduce a Microsoft Graph API membership check before executing access provisioning or revocation.
+
+This would allow the workflow to determine whether the target user is already a member of the selected security group.
+
+The enhancement would help prevent unnecessary API operations and provide more appropriate outcomes when access has already been granted or revoked.
+
+### 2. Enhanced Microsoft Graph Error Handling
+
+Extend the custom integration actions to distinguish between different Microsoft Graph HTTP responses, including authentication failures, permission errors, missing resources, and temporary service failures.
+
+Introduce more specific error messages and structured diagnostic logging to support troubleshooting.
+
+This would improve the ability of Service Desk and platform support teams to identify and resolve integration problems.
+
+### 3. Automated Retry Mechanisms
+
+Implement controlled retry logic for temporary integration failures, such as Microsoft Graph service unavailability or rate limiting.
+
+Retry attempts should use appropriate delays and limits to avoid excessive API requests.
+
+Permanent failures, such as invalid permissions or missing resources, should be handled separately rather than repeatedly retried.
+
+### 4. Role-Based Access Controls
+
+Introduce additional ServiceNow access controls to restrict who can submit, approve, or administer Microsoft Entra ID access requests.
+
+These controls could include dedicated ServiceNow roles, approval policies, and group-based permissions.
+
+This would strengthen access governance and reduce the risk of unauthorised request processing.
+
+### 5. Access Expiration and Automated Revocation
+
+Extend the catalog item to support time-limited group memberships.
+
+Approved access requests could include an expiration date, allowing ServiceNow to initiate an automated revocation process when the authorised access period ends.
+
+This would support temporary access requirements and reduce the risk of users retaining unnecessary permissions.
+
+### 6. Notifications and Operational Monitoring
+
+Introduce automated notifications to inform requesters, approvers, and support teams about request outcomes.
+
+Notifications could cover successful provisioning, successful revocation, rejected requests, and integration failures requiring investigation.
+
+Additional monitoring dashboards could provide visibility into request volumes, approval outcomes, processing failures, and access management performance.
+
+### 7. Improved Audit and Reporting Capabilities
+
+Develop ServiceNow reports and dashboards to analyse access request activity and processing outcomes.
+
+Potential reporting metrics include:
+
+- Total access requests submitted.
+- Approved and rejected requests.
+- Successful provisioning and revocation operations.
+- Integration failures requiring investigation.
+- Average request processing time.
+- Access requests by target security group.
+
+These reports could support operational reviews, compliance activities, and continuous improvement.
+
+### 8. Production Readiness and Security Hardening
+
+Before production deployment, conduct a formal review of the integration's security configuration, operational controls, and support requirements.
+
+Potential activities include reviewing Microsoft Graph application permissions, implementing credential rotation procedures, restricting sensitive data exposure, and establishing monitoring and recovery processes.
+
+Additional testing should cover permission failures, invalid user identifiers, unavailable groups, duplicate membership requests, and other exception scenarios.
+
+### Conclusion
+
+This project demonstrates the practical application of ServiceNow workflow automation, Microsoft Entra ID identity management, OAuth 2.0 authentication, and Microsoft Graph REST API integration.
+
+The implemented solution successfully processed approved access provisioning and revocation requests, prevented group membership changes following approval rejection, and handled workflow execution failures through a configured Error Handler.
+
+The proposed enhancements provide a roadmap for improving the solution's reliability, security, maintainability, and suitability for enterprise Identity and Access Management operations.
 
 
