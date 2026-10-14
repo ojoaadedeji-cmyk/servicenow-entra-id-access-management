@@ -628,4 +628,154 @@ Future improvements could include:
 
 These enhancements would improve the resilience, maintainability, and operational supportability of the integration.
 
+## Testing and Validation
+
+### Testing Overview
+
+Functional and negative testing were conducted to validate the ServiceNow Microsoft Entra ID Access Management solution.
+
+The tests focused on verifying the approval workflow, Microsoft Graph API integration, security group membership changes, automated Requested Item (RITM) updates, and error-handling behaviour.
+
+Testing was performed using controlled test accounts and security groups within the Microsoft Entra ID test environment.
+
+Four primary test scenarios were completed.
+
+### Test Results Summary
+
+| Test ID | Test Scenario | RITM Reference | Expected Outcome | Result |
+|---|---|---|---|---|
+| TC01 | Grant Access | RITM0010012 | Approved user added to the selected Entra ID group; RITM closed complete. | PASSED |
+| TC02 | Revoke Access | RITM0010013 | Approved user removed from the selected Entra ID group; RITM closed complete. | PASSED |
+| TC03 | Approval Rejection | RITM0010017 | No group membership changes; RITM closed incomplete. | PASSED |
+| TC04 | Integration Error Handling | RITM0010018 | Execution failure caught; successful closure prevented; RITM closed incomplete. | PASSED |
+
+### TC01: Successful Access Provisioning
+
+**Objective:** Verify that an approved access request automatically adds the target user to the selected Microsoft Entra ID security group.
+
+**Test Data:**
+
+- Requested Item: RITM0010012
+- Target User: Sarah Williams
+- Access Action: Grant Access
+- Target Group: Finance System Users
+- Approval Outcome: Approved
+
+**Expected Result:**
+
+Following approval, ServiceNow should execute the Microsoft Graph provisioning action, add the target user to the selected group, and close the RITM as complete.
+
+**Actual Result:**
+
+The Microsoft Graph integration successfully added Sarah Williams to the Finance System Users group.
+
+The group membership was verified in Microsoft Entra ID.
+
+ServiceNow automatically updated RITM0010012 to Closed Complete and recorded work notes confirming successful access provisioning.
+
+**Test Status: PASSED**
+
+### TC02: Successful Access Revocation
+
+**Objective:** Verify that an approved revocation request automatically removes the target user from the selected Microsoft Entra ID security group.
+
+**Test Data:**
+
+- Requested Item: RITM0010013
+- Target User: Sarah Williams
+- Access Action: Revoke Access
+- Target Group: Finance System Users
+- Approval Outcome: Approved
+
+**Expected Result:**
+
+Following approval, ServiceNow should execute the Microsoft Graph revocation action, remove the target user from the selected group, and close the RITM as complete.
+
+**Actual Result:**
+
+The Microsoft Graph integration successfully removed Sarah Williams from the Finance System Users group.
+
+The membership removal was verified in Microsoft Entra ID.
+
+ServiceNow automatically updated RITM0010013 to Closed Complete and recorded work notes confirming successful access revocation.
+
+**Test Status: PASSED**
+
+### TC03: Approval Rejection
+
+**Objective:** Verify that a rejected access request does not result in unauthorised Microsoft Entra ID group membership changes.
+
+**Test Data:**
+
+- Requested Item: RITM0010017
+- Target User: Sarah Williams
+- Access Action: Grant Access
+- Target Group: Finance System Users
+- Approval Outcome: Rejected
+
+**Expected Result:**
+
+The workflow should prevent execution of the Microsoft Graph provisioning action and close the RITM as incomplete.
+
+**Actual Result:**
+
+The request was rejected during the approval process.
+
+The Microsoft Graph provisioning action was not executed, and Sarah Williams was not added to the Finance System Users group.
+
+ServiceNow automatically updated RITM0010017 to Closed Incomplete and recorded work notes confirming rejection.
+
+**Test Status: PASSED**
+
+### TC04: Integration Error Handling
+
+**Objective:** Verify that an unsuccessful integration operation triggers the configured error-handling process rather than incorrectly closing the request as successful.
+
+**Test Data:**
+
+- Requested Item: RITM0010018
+- Target User: Sarah Williams
+- Access Action: Revoke Access
+- Target Group: Finance System Users
+- Approval Outcome: Approved
+- Initial Membership Status: User was not a member of the selected group.
+
+**Expected Result:**
+
+If the Microsoft Graph operation encounters an execution error, the workflow should prevent normal successful closure, execute the Error Handler, and close the RITM as incomplete with investigation notes.
+
+**Actual Result:**
+
+The workflow reached the Remove User from Entra ID Group action, where an error was caught.
+
+The normal successful closure action was not executed.
+
+The Flow Designer Error Handler executed and automatically updated RITM0010018 to Closed Incomplete.
+
+Work notes were recorded indicating that automated processing could not be completed and manual investigation was required.
+
+The precise underlying Microsoft Graph error was not independently confirmed or subsequently resolved.
+
+**Test Status: PASSED (Error-handling behaviour)**
+
+### Overall Testing Outcome
+
+All four test scenarios passed their defined acceptance criteria.
+
+The tests demonstrated:
+
+1. Successful automated access provisioning through Microsoft Graph API.
+2. Successful automated access revocation through Microsoft Graph API.
+3. Prevention of group membership changes following approval rejection.
+4. Correct execution of the workflow error handler following an integration failure.
+5. Appropriate RITM lifecycle updates and processing work notes.
+
+The negative test confirmed the workflow's ability to handle execution errors. It did not establish the precise cause of the underlying Microsoft Graph failure.
+
+### Testing Evidence
+
+Supporting screenshots will be organised in the [Screenshots Directory](screenshots/README.md).
+
+The supporting screenshots will document ServiceNow flow execution results, RITM records, approval outcomes, and Microsoft Entra ID group membership verification, while ensuring that credentials, authentication tokens, and other confidential information are not publicly exposed.
+
 
