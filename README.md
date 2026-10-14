@@ -778,4 +778,87 @@ Supporting screenshots will be organised in the [Screenshots Directory](screensh
 
 The supporting screenshots will document ServiceNow flow execution results, RITM records, approval outcomes, and Microsoft Entra ID group membership verification, while ensuring that credentials, authentication tokens, and other confidential information are not publicly exposed.
 
+## Security Considerations
+
+### Security Overview
+
+Security was an important consideration during the development of the ServiceNow Microsoft Entra ID Access Management solution.
+
+The integration incorporates application-based authentication, Microsoft Graph API permissions, approval governance, and controlled handling of integration credentials.
+
+These controls support secure communication between ServiceNow and Microsoft Entra ID while reducing the risk of unauthorised group membership changes.
+
+### OAuth 2.0 Authentication
+
+The integration uses the **OAuth 2.0 Client Credentials Grant** to authenticate ServiceNow with Microsoft identity services.
+
+This approach allows ServiceNow to obtain access tokens using a registered application identity rather than requiring an interactive user sign-in.
+
+The OAuth configuration is maintained within ServiceNow and associated with the Microsoft Graph REST integration.
+
+Application credentials and access tokens are excluded from the public GitHub repository.
+
+### Microsoft Graph API Permissions
+
+Microsoft Graph application permissions authorise the registered integration application to perform user lookup and security group membership operations.
+
+The integration relies on the permissions configured in Microsoft Entra ID and the corresponding administrator consent.
+
+The principle of least privilege is an important consideration when assigning application permissions.
+
+Only the permissions necessary for the required integration operations should be granted.
+
+### Approval-Based Access Governance
+
+The ServiceNow workflow requires an approval decision before executing Microsoft Entra ID group membership changes.
+
+Approved requests proceed to the appropriate Microsoft Graph operation.
+
+Rejected or cancelled requests are closed without executing the provisioning or revocation actions.
+
+This provides a governance control that separates access requests from the authorisation required to process them.
+
+### Request Traceability
+
+ServiceNow Requested Item records provide visibility into the processing of access requests.
+
+The workflow records approval outcomes, request closure states, and work notes describing successful operations, rejected requests, or execution failures.
+
+These records support operational traceability and investigation of unsuccessful access management activities.
+
+### Integration Error Handling
+
+The integration validates HTTP responses from Microsoft Graph API.
+
+Unexpected responses can trigger the configured Flow Designer Error Handler, which updates affected requests to Closed Incomplete and records work notes requiring investigation.
+
+This reduces the risk of unsuccessful access operations being incorrectly recorded as completed.
+
+### Protection of Sensitive Information
+
+The public GitHub repository must not contain:
+
+- OAuth 2.0 client secrets or application passwords.
+- Access tokens or refresh tokens.
+- Authentication headers containing bearer tokens.
+- Confidential integration credentials.
+- Unredacted screenshots exposing sensitive authentication information.
+
+Technical documentation and screenshots should use redacted or illustrative values where necessary.
+
+### Security Limitations and Future Improvements
+
+Although the solution demonstrates application authentication, approval governance, and error handling, additional controls would be required before deployment in a production environment.
+
+Potential improvements include:
+
+1. Reviewing Microsoft Graph application permissions to enforce least privilege.
+2. Introducing periodic credential rotation and monitoring.
+3. Restricting which users can submit or approve access requests.
+4. Implementing additional validation of target users and security groups.
+5. Introducing structured logging and operational alerting for integration failures.
+6. Reviewing audit retention and access to sensitive request information.
+
+These enhancements would strengthen the security, governance, and operational readiness of the solution.
+
 
