@@ -366,4 +366,82 @@ REST endpoint parameters identify the required Microsoft Entra ID users and grou
 
 Client secrets, access tokens, and confidential authentication configuration values are excluded from the public GitHub repository.
 
+## Custom Flow Designer Actions and JavaScript Implementation
+
+### Overview
+
+Three custom Flow Designer actions were developed in ServiceNow Workflow Studio to support Microsoft Entra ID user identification, access provisioning, and access revocation.
+
+These actions encapsulate Microsoft Graph API operations, allowing the main access request workflow to execute integration tasks using reusable components.
+
+The custom actions use ServiceNow server-side JavaScript and Outbound REST Messages to communicate with Microsoft Graph API.
+
+### Custom Actions
+
+| Custom Action | Purpose | Microsoft Graph Operation |
+|---|---|---|
+| Get Entra ID User | Resolves the target user's Microsoft Entra ID object ID using the supplied user principal name. | GET |
+| Add User to Entra ID Group | Adds the identified user to the selected Microsoft Entra ID security group. | POST |
+| Remove User from Entra ID Group | Removes the identified user from the selected Microsoft Entra ID security group. | DELETE |
+
+### 1. Get Entra ID User
+
+The **Get Entra ID User** custom action retrieves the Microsoft Entra ID object ID of the user specified in the Service Catalog request.
+
+The action receives the target user's email address or user principal name from the workflow and queries Microsoft Graph API.
+
+The returned user object ID is made available to subsequent Flow Designer actions.
+
+This separates user identification from group membership operations and enables the workflow to use a consistent user identifier.
+
+### 2. Add User to Entra ID Group
+
+The **Add User to Entra ID Group** custom action provisions group membership following approval.
+
+The action receives the target group object ID and user object ID from the workflow.
+
+A server-side JavaScript step uses ServiceNow's `sn_ws.RESTMessageV2` API to execute the configured Microsoft Graph POST request.
+
+The action validates the HTTP response and treats HTTP 204 as successful execution.
+
+If Microsoft Graph returns an unexpected response, the script raises an error so that the workflow does not incorrectly record the operation as successful.
+
+### 3. Remove User from Entra ID Group
+
+The **Remove User from Entra ID Group** custom action revokes group membership following approval.
+
+The action receives the target group object ID and user object ID.
+
+A server-side JavaScript step executes the configured Microsoft Graph DELETE request using `sn_ws.RESTMessageV2`.
+
+The action validates the HTTP response and treats HTTP 204 as successful execution.
+
+Unexpected responses cause the action to raise an error, allowing the workflow's error-handling configuration to respond appropriately.
+
+### ServiceNow RESTMessageV2
+
+The integration uses the `sn_ws.RESTMessageV2` API to invoke predefined ServiceNow Outbound REST Message methods.
+
+This approach separates the REST endpoint and authentication configuration from the main workflow logic.
+
+The scripts use REST path parameters to identify the relevant Microsoft Entra ID user and security group.
+
+The HTTP response status is then evaluated to determine whether the operation completed successfully.
+
+### Reusable Action Design
+
+Separating the integration into three custom actions provides several benefits:
+
+1. **Modularity:** User lookup, provisioning, and revocation are implemented as separate workflow components.
+2. **Reusability:** The custom actions can be invoked by other compatible ServiceNow flows.
+3. **Maintainability:** Changes to an integration operation can be managed within its corresponding custom action.
+4. **Error detection:** Each integration operation can validate its HTTP response.
+5. **Workflow clarity:** The main flow remains focused on approval governance, conditional processing, and request lifecycle management.
+
+### Technical Script Documentation
+
+The JavaScript implementation and relevant configuration details will be documented separately in the [Integration Scripts](scripts/README.md) directory.
+
+Authentication credentials, client secrets, and access tokens are excluded from the public repository.
+
 
