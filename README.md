@@ -772,11 +772,32 @@ The tests demonstrated:
 
 The negative test confirmed the workflow's ability to handle execution errors. It did not establish the precise cause of the underlying Microsoft Graph failure.
 
+
 ### Testing Evidence
 
-Supporting screenshots will be organised in the [Screenshots Directory](screenshots/README.md).
+The solution was validated through four functional and negative testing scenarios covering successful access provisioning, access revocation, approval rejection, and integration error handling.
 
-The supporting screenshots will document ServiceNow flow execution results, RITM records, approval outcomes, and Microsoft Entra ID group membership verification, while ensuring that credentials, authentication tokens, and other confidential information are not publicly exposed.
+The following screenshots provide supporting evidence of the ServiceNow Requested Item (RITM) lifecycle, approval outcomes, and automated workflow processing.
+
+| Test Case | Scenario | Requested Item | Result | Evidence |
+|---|---|---|---|---|
+| TC01 | Successful Access Provisioning | RITM0010012 | Passed | [Screenshot 16](screenshots/16-successful-grant-access-request.png) |
+| TC02 | Successful Access Revocation | RITM0010013 | Passed | [Screenshot 17](screenshots/17-successful-revoke-access-request.png) |
+| TC03 | Approval Rejection | RITM0010017 | Passed | [Screenshot 18](screenshots/18-rejected-access-request.png) |
+| TC04 | Integration Error Handling | RITM0010018 | Passed (Error Handling) | [Screenshot 19](screenshots/19-integration-error-handling.png) |
+
+**Testing Outcomes**
+
+- **Access Provisioning:** An approved request successfully added the target user to the selected Microsoft Entra ID security group.
+- **Access Revocation:** An approved request successfully removed the target user from the selected Microsoft Entra ID security group.
+- **Approval Rejection:** A rejected request was closed without executing the Microsoft Graph group membership operation.
+- **Integration Error Handling:** A workflow execution failure triggered the configured Error Handler, which closed the requested item as incomplete and recorded work notes requiring manual investigation.
+
+The successful provisioning and revocation scenarios were additionally validated through Microsoft Entra ID group membership verification.
+
+The error-handling test confirmed the workflow's exception management behaviour but did not establish the underlying cause of the failure in the Microsoft Graph operation.
+
+Additional configuration and implementation screenshots are available in the [Screenshots Directory](screenshots/README.md).
 
 ## Security Considerations
 
