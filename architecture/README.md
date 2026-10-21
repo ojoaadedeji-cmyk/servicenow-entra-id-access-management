@@ -36,8 +36,6 @@ The architecture consists of two primary environments:
 
 This architecture demonstrates approval-controlled identity management automation, application-based authentication, REST API integration, and request traceability.
 
-This folder contains the solution architecture and process flow documentation for the ServiceNow Microsoft Entra ID Access Management project.
-
 ## Architecture Overview
 
 The solution integrates ServiceNow with Microsoft Entra ID through Microsoft Graph API to automate user access provisioning and revocation.
