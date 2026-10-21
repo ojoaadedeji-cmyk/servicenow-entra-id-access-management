@@ -1089,6 +1089,33 @@ Potential activities include reviewing Microsoft Graph application permissions, 
 
 Additional testing should cover permission failures, invalid user identifiers, unavailable groups, duplicate membership requests, and other exception scenarios.
 
+### 9. Future JavaScript and Integration Improvements
+
+The three custom Flow Designer actions were successfully implemented and tested using ServiceNow's `sn_ws.RESTMessageV2` API.
+
+A subsequent technical review identified opportunities to strengthen input validation, exception handling, diagnostic logging, and integration resilience.
+
+The following improvements are proposed for future implementation:
+
+1. **User Lookup Response Validation:** Enhance the Get Entra ID User action to verify that the Microsoft Graph response contains a valid user object ID before passing it to subsequent workflow actions.
+
+2. **Input Parameter Validation:** Introduce explicit checks to ensure that required inputs, including `user_email`, `group_id`, and `user_id`, are populated before executing REST API requests.
+
+3. **Consistent Exception Handling:** Standardise the use of JavaScript `Error` objects across all three custom actions to support consistent exception handling and troubleshooting.
+
+4. **HTTP Error Classification:** Improve error handling by distinguishing between authentication failures (401), insufficient permissions (403), missing resources (404), and other unsuccessful Microsoft Graph responses.
+
+5. **Sensitive Information Protection:** Review diagnostic logging to ensure that authentication credentials, access tokens, and sensitive API response information are not exposed in user-visible work notes or application logs.
+
+6. **Duplicate Membership and Revocation Validation:** Introduce Microsoft Graph membership checks before provisioning or revoking access to identify users who are already members or have already been removed from the selected security group.
+
+7. **Integration Resilience:** Consider controlled retry mechanisms for temporary Microsoft Graph failures, including service unavailability and rate limiting, while avoiding retries for permanent errors.
+
+**Implementation Status:** These improvements have been identified for future development and have not yet been implemented in the published ServiceNow custom Flow Actions.
+
+The existing scripts remain unchanged and reflect the implementation used during the documented functional and negative testing scenarios.
+
+
 ### Conclusion
 
 This project demonstrates the practical application of ServiceNow workflow automation, Microsoft Entra ID identity management, OAuth 2.0 authentication, and Microsoft Graph REST API integration.
