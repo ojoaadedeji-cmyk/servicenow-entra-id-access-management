@@ -65,3 +65,54 @@ The solution integrates ServiceNow with Microsoft Entra ID through Microsoft Gra
 The integration uses OAuth 2.0 client credentials authentication. Authentication secrets and access tokens were not included in the public repository.
 
 Approval controls restrict automated access changes to approved requests.
+
+
+## Solution Process Flow Diagram
+
+![ServiceNow Microsoft Entra ID Access Request Process Flow](02-access-request-process-flow-diagram.png)
+
+The process flow diagram illustrates the complete lifecycle of a Microsoft Entra ID access request, from Service Catalog submission through approval, automated identity management, and final Requested Item closure.
+
+### Workflow Execution Sequence
+
+1. **Access Request Submission:** A requester submits the Microsoft Entra ID Access Request catalog item, specifying the target user, security group, requested action, and business justification.
+
+2. **Requested Item Creation:** ServiceNow creates a Requested Item (RITM) containing the submitted catalog variables.
+
+3. **Approval Processing:** Flow Designer evaluates the configured approval requirements before proceeding with automated access management.
+
+4. **Approval Decision:**
+   - **Approved:** The workflow continues to retrieve the request details.
+   - **Rejected or Cancelled:** The workflow closes the RITM as Closed Incomplete without executing Microsoft Graph group membership changes.
+
+5. **Retrieve Request Details:** Flow Designer retrieves the catalog variables, including the target user's email address, selected Microsoft Entra ID group, and requested access action.
+
+6. **Get Entra ID User (GET):** A custom Flow Designer action invokes Microsoft Graph API through `sn_ws.RESTMessageV2` to retrieve the target user's Microsoft Entra ID object ID.
+
+7. **Grant Access (POST):** For approved provisioning requests, the workflow invokes the custom Add User to Entra ID Group action, which sends a Microsoft Graph POST request to add the user to the selected security group.
+
+8. **Revoke Access (DELETE):** For approved revocation requests, the workflow invokes the custom Remove User from Entra ID Group action, which sends a Microsoft Graph DELETE request to remove the user from the selected security group.
+
+9. **Error Handling:** If a workflow execution error occurs, the configured Error Handler records investigation notes and closes the Requested Item as Closed Incomplete.
+
+10. **Group Membership Update:** Microsoft Entra ID processes successful Microsoft Graph membership operations, adding or removing the target user from the selected security group.
+
+11. **Requested Item Closure:** Following successful processing, Flow Designer records the outcome in the work notes and automatically closes the RITM as Closed Complete.
+
+### Workflow Outcomes
+
+| Scenario | Microsoft Graph Operation | Final RITM State |
+|---|---|---|
+| Approved Grant Access | GET and POST | Closed Complete |
+| Approved Revoke Access | GET and DELETE | Closed Complete |
+| Rejected or Cancelled Request | No group membership operation | Closed Incomplete |
+| Workflow Execution Error | Operation unsuccessful or interrupted | Closed Incomplete |
+
+### Workflow Governance and Controls
+
+The solution incorporates approval-based access governance, OAuth 2.0 client credentials authentication, Microsoft Graph API response validation, automated Requested Item lifecycle updates, and workflow-level exception handling.
+
+Successful requests are recorded as Closed Complete, while rejected requests and execution failures are recorded as Closed Incomplete with appropriate work notes.
+
+These controls support consistent identity management, traceability, and operational accountability.
+
