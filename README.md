@@ -440,9 +440,9 @@ Separating the integration into three custom actions provides several benefits:
 
 ### Technical Script Documentation
 
-The JavaScript implementation and relevant configuration details will be documented separately in the [Integration Scripts](scripts/README.md) directory.
+The JavaScript implementation and relevant configuration details were documented separately in the [Integration Scripts](scripts/README.md) directory.
 
-Authentication credentials, client secrets, and access tokens are excluded from the public repository.
+Authentication credentials, client secrets, and access tokens were excluded from the public repository.
 
 ## Approval Governance and Access Management Workflow
 
